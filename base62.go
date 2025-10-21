@@ -1,4 +1,4 @@
-package util
+package main
 
 // Convert ID to base62 string
 func idToBase62(id int64) string {
