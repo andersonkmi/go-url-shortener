@@ -19,6 +19,8 @@ func TestConvertNumberToBase62(t *testing.T) {
 		{0, "0"},
 		{123, "1z"},
 		{29290292, "1ytk4"},
+		{234939933, "Ftmbl"},
+		{9838878277171713, "j3qy6tC4n"},
 	}
 
 	for _, tc := range testcases {
