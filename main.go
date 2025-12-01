@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go-url-shortener/internal/shortener"
-	"go-url-shortener/internal/store"
+	"go-url-shortener/shortener"
+	"go-url-shortener/store"
 	"log"
 	"net/http"
 	"strings"
