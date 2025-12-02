@@ -11,7 +11,7 @@ type ShortUrl struct {
 	ShortUrl string
 }
 
-func GenerateShortUrlId(connection *sql.DB) (int64, error) {
+func generateShortUrlId(connection *sql.DB) (int64, error) {
 	var urlId int64
 	err := connection.QueryRow("select nextval('url_id_sequence')").Scan(&urlId)
 	if err != nil {
