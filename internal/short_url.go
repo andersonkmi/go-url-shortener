@@ -6,7 +6,7 @@ import (
 	"go-url-shortener/base62"
 )
 
-func generateShortUrl(originalUrl string, connection *sql.DB) (string, error) {
+func GenerateShortUrl(originalUrl string, connection *sql.DB) (string, error) {
 	id, err := generateShortUrlId(connection)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate short url id: %v", err)
