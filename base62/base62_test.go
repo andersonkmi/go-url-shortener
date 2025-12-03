@@ -5,7 +5,7 @@ import (
 )
 
 func TestConvertZeroToBase62(t *testing.T) {
-	result := idToBase62(0)
+	result := IdToBase62(0)
 	if result != "0" {
 		t.Errorf("Expected 0 to be converted to 0, got %s", result)
 	}
@@ -24,7 +24,7 @@ func TestConvertNumberToBase62(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		result := idToBase62(tc.in)
+		result := IdToBase62(tc.in)
 		if result != tc.want {
 			t.Errorf("Expected %d to be converted to %s, got %s", tc.in, tc.want, result)
 		}
