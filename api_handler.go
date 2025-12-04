@@ -53,6 +53,7 @@ func shortenHandler(writer http.ResponseWriter, r *http.Request) {
 
 	shortenedUrl, err := shortener.ShortenUrl(createUrlRequest.URL)
 	if err != nil {
+		log.Println(err)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
