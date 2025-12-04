@@ -9,6 +9,15 @@ import (
 	"strings"
 )
 
+type CreateURLRequest struct {
+	URL string `json:"url"`
+}
+
+type URLResponse struct {
+	URL      string `json:"url"`
+	ShortUrl string `json:"shortUrl"`
+}
+
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	// Remove landing slash from path
 	shortCode := strings.TrimPrefix(r.URL.Path, "/")

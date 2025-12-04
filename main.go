@@ -7,15 +7,6 @@ import (
 	"net/http"
 )
 
-type CreateURLRequest struct {
-	URL string `json:"url"`
-}
-
-type URLResponse struct {
-	URL      string `json:"url"`
-	ShortUrl string `json:"shortUrl"`
-}
-
 func main() {
 	connectionStr := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
