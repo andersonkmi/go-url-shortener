@@ -1,0 +1,63 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"go-url-shortener/internal"
+	"go-url-shortener/shortener"
+	"net/http"
+	"strings"
+)
+
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
+	// Remove landing slash from path
+	shortCode := strings.TrimPrefix(r.URL.Path, "/")
+
+	if shortCode == "" {
+		// should return something to the API caller
+		return
+	}
+
+	// Replace with the new function
+	longUrl := ""
+	http.Redirect(w, r, longUrl, http.StatusFound)
+}
+
+func shortenHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var createUrlRequest CreateURLRequest
+	if err := json.NewDecoder(r.Body).Decode(&createUrlRequest); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if createUrlRequest.URL == "" {
+		http.Error(w, "URL is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get a connection to the database
+	connection := internal.GetDB()
+	shortenedUrl, err := shortener.ShortenUrl(createUrlRequest.URL, connection)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	shortUrl := fmt.Sprintf("http://localhost:8080/%s", shortenedUrl)
+	fmt.Sprintln(w, "Short URL created: %s", shortUrl)
+
+	var urlResponse = URLResponse{createUrlRequest.URL, shortUrl}
+	respondWithJSON(w, http.StatusOK, urlResponse)
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
