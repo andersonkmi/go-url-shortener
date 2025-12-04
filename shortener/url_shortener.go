@@ -1,11 +1,11 @@
 package shortener
 
 import (
-	"database/sql"
 	"go-url-shortener/internal"
 )
 
-func ShortenUrl(url string, connection *sql.DB) (string, error) {
+func ShortenUrl(url string) (string, error) {
+	connection := internal.GetDB()
 	shortUrl, err := internal.GenerateShortUrl(url, connection)
 	if err != nil {
 		return "", err

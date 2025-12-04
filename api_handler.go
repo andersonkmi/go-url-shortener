@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"go-url-shortener/internal"
 	"go-url-shortener/shortener"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -35,14 +35,14 @@ func shortenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if createUrlRequest.URL == "" {
-		http.Error(w, "URL is required", http.StatusBadRequest)
+	err := validateUrl(createUrlRequest.URL)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Get a connection to the database
-	connection := internal.GetDB()
-	shortenedUrl, err := shortener.ShortenUrl(createUrlRequest.URL, connection)
+	shortenedUrl, err := shortener.ShortenUrl(createUrlRequest.URL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -60,4 +60,16 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+}
+
+func validateUrl(url string) error {
+	if url == "" {
+		return fmt.Errorf("URL is empty")
+	}
+
+	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
+		return fmt.Errorf("URL must start with http or https")
+	}
+
+	return nil
 }
