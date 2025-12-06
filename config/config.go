@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type DBConfig struct {
+type Config struct {
 	Host                  string
 	Port                  int
 	User                  string
@@ -19,6 +19,7 @@ type DBConfig struct {
 	MaxIdleConnections    int
 	ConnectionMaxLifetime int
 	ConnectionMaxIdleTime int
+	ApplicationPort       int
 }
 
 const (
@@ -32,9 +33,10 @@ const (
 	maxIdleConnectionsEnvKey    = "DB_MAX_IDLE_CONNECTIONS"
 	connectionMaxLifetimeEnvKey = "DB_CONN_MAX_LIFETIME_MIN"
 	connectionMaxIdleEnvKey     = "DB_CONN_MAX_IDLE_TIME_MIN"
+	applicationPortEnvKey       = "PORT"
 )
 
-func LoadDBConfig() DBConfig {
+func LoadConfig() Config {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
@@ -48,8 +50,9 @@ func LoadDBConfig() DBConfig {
 	maxIdleConnections := getEnvironmentAsInt(maxIdleConnectionsEnvKey, 10)
 	connectionMaxLifetime := getEnvironmentAsInt(connectionMaxLifetimeEnvKey, 30)
 	connectionMaxIdleTime := getEnvironmentAsInt(connectionMaxIdleEnvKey, 10)
+	applicationPort := getEnvironmentAsInt(applicationPortEnvKey, 8080)
 
-	return DBConfig{
+	return Config{
 		dbHost,
 		dbPort,
 		dbUser,
@@ -59,7 +62,9 @@ func LoadDBConfig() DBConfig {
 		maxOpenConnections,
 		maxIdleConnections,
 		connectionMaxLifetime,
-		connectionMaxIdleTime}
+		connectionMaxIdleTime,
+		applicationPort,
+	}
 }
 
 func getEnvironment(key, defaultValue string) string {
