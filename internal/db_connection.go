@@ -33,10 +33,6 @@ func Init(config config.DBConfig) error {
 	return nil
 }
 
-func GetDB() *sql.DB {
-	return db
-}
-
 func Close() error {
 	if db != nil {
 		return db.Close()
