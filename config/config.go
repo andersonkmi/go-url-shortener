@@ -21,16 +21,18 @@ type DBConfig struct {
 	ConnectionMaxIdleTime int
 }
 
-const dbHostEnvKey = "DB_HOST"
-const dbPortEnvKey = "DB_PORT"
-const dbUserEnvKey = "DB_USER"
-const dbPasswordEnvKey = "DB_PASSWORD"
-const dbNameEnvKey = "DB_NAME"
-const dbSSLModeEnvKey = "DB_SSL_MODE"
-const maxOpenConnectionsEnvKey = "DB_MAX_OPEN_CONNECTIONS"
-const maxIdleConnectionsEnvKey = "DB_MAX_IDLE_CONNECTIONS"
-const connectionMaxLifetimeEnvKey = "DB_CONN_MAX_LIFETIME_MIN"
-const connectionMaxIdleEnvKey = "DB_CONN_MAX_IDLE_TIME_MIN"
+const (
+	dbHostEnvKey                = "DB_HOST"
+	dbPortEnvKey                = "DB_PORT"
+	dbUserEnvKey                = "DB_USER"
+	dbPasswordEnvKey            = "DB_PASSWORD"
+	dbNameEnvKey                = "DB_NAME"
+	dbSSLModeEnvKey             = "DB_SSL_MODE"
+	maxOpenConnectionsEnvKey    = "DB_MAX_OPEN_CONNECTIONS"
+	maxIdleConnectionsEnvKey    = "DB_MAX_IDLE_CONNECTIONS"
+	connectionMaxLifetimeEnvKey = "DB_CONN_MAX_LIFETIME_MIN"
+	connectionMaxIdleEnvKey     = "DB_CONN_MAX_IDLE_TIME_MIN"
+)
 
 func LoadDBConfig() DBConfig {
 	if err := godotenv.Load(); err != nil {
