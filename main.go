@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	config := config.LoadConfig()
-	if err := internal.Init(config); err != nil {
+	appConfig := config.LoadConfig()
+	if err := internal.Init(appConfig); err != nil {
 		log.Fatal(err)
 	}
 	defer internal.Close()
@@ -18,5 +18,5 @@ func main() {
 	fmt.Println("Starting a server on port 8080")
 	http.HandleFunc("/", redirectHandler)
 	http.HandleFunc("/shorten", shortenHandler)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.ApplicationPort), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", appConfig.ApplicationPort), nil))
 }
