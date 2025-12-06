@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
+	"go-url-shortener/config"
 	"go-url-shortener/internal"
 	"log"
 	"net/http"
 )
 
 func main() {
-	// Change this to use parameters from a config function
-	connectionStr := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		"127.0.0.1", 5432, "pguser", "pgpwd", "urlshortner", "disable")
-	if err := internal.Init(connectionStr); err != nil {
+	dbConfig := config.LoadDBConfig()
+	if err := internal.Init(dbConfig); err != nil {
 		log.Fatal(err)
 	}
 	defer internal.Close()

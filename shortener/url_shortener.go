@@ -5,8 +5,7 @@ import (
 )
 
 func ShortenUrl(url string) (string, error) {
-	connection := internal.GetDB()
-	shortUrl, err := internal.GenerateShortUrl(url, connection)
+	shortUrl, err := internal.GenerateShortUrl(url)
 	if err != nil {
 		return "", err
 	}

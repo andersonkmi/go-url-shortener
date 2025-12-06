@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"database/sql"
 	"fmt"
 )
 
@@ -11,22 +10,29 @@ type ShortUrl struct {
 	ShortUrl string
 }
 
-func generateShortUrlId(connection *sql.DB) (int64, error) {
+func generateShortUrlId() (int64, error) {
 	var urlId int64
-	err := connection.QueryRow("select nextval('url_id_sequence')").Scan(&urlId)
+	err := db.QueryRow("select nextval('url_id_sequence')").Scan(&urlId)
 	if err != nil {
 		return -1, fmt.Errorf("failed to generate short url id: %v", err)
 	}
 	return urlId, nil
 }
 
-func saveShortUrl(connection *sql.DB, shortUrl ShortUrl) error {
-	_, err := connection.Exec("insert into url(url_id, url, short_url) values ($1, $2, $3)", shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl)
+func saveShortUrl(shortUrl ShortUrl) error {
+	_, err := db.Exec("insert into url(url_id, url, short_url) values ($1, $2, $3)", shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl)
 	return err
 }
 
-func getUrl(connection *sql.DB, url string) (ShortUrl, error) {
+func getUrl(url string) (ShortUrl, error) {
 	var shortUrl ShortUrl
-	err := connection.QueryRow("select url_id, url, short_url from url where url = $1", url).Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
+	err := db.QueryRow("select url_id, url, short_url from url where url = $1", url).Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
 	return shortUrl, err
+}
+
+func urlAlreadyExists(url string) bool {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM url WHERE url = $1)`
+	db.QueryRow(query, url).Scan(&exists)
+	return exists
 }

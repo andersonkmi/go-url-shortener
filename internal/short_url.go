@@ -1,32 +1,30 @@
 package internal
 
 import (
-	"database/sql"
 	"fmt"
 	"go-url-shortener/base62"
 	"log"
 )
 
-func GenerateShortUrl(originalUrl string, connection *sql.DB) (string, error) {
+func GenerateShortUrl(originalUrl string) (string, error) {
 	// Verify if the current URL is already present
-	shortUrl, err := getUrl(connection, originalUrl)
-	if err != nil {
-		return "", fmt.Errorf("failed to get short url: %v", err)
+	alreadyShortened := urlAlreadyExists(originalUrl)
+	if alreadyShortened == true {
+		shortenedUrl, _ := getUrl(originalUrl)
+		if shortenedUrl.Url != "" {
+			log.Default().Println(fmt.Sprintf("URL %s is already shortened", originalUrl))
+			return shortenedUrl.ShortUrl, nil
+		}
 	}
 
-	if shortUrl.Url != "" {
-		log.Default().Println(fmt.Sprintf("URL %s is already shortened", originalUrl))
-		return shortUrl.ShortUrl, nil
-	}
-
-	id, err := generateShortUrlId(connection)
+	id, err := generateShortUrlId()
 	if err != nil {
 		return "", fmt.Errorf("failed to generate short url id: %v", err)
 	}
 
 	base62Id := base62.IdToBase62(id)
 	newShortUrl := ShortUrl{id, originalUrl, base62Id}
-	err2 := saveShortUrl(connection, newShortUrl)
+	err2 := saveShortUrl(newShortUrl)
 	if err2 != nil {
 		return "", fmt.Errorf("failed to save short url: %v", err2)
 	}
