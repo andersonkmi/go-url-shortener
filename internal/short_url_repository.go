@@ -25,8 +25,8 @@ func saveShortUrl(connection *sql.DB, shortUrl ShortUrl) error {
 	return err
 }
 
-func getShortUrl(connection *sql.DB, shortenedUrl string) (ShortUrl, error) {
+func getUrl(connection *sql.DB, url string) (ShortUrl, error) {
 	var shortUrl ShortUrl
-	err := connection.QueryRow("select url_id, url, short_url from url where short_url = $1", shortenedUrl).Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
+	err := connection.QueryRow("select url_id, url, short_url from url where url = $1", url).Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
 	return shortUrl, err
 }
