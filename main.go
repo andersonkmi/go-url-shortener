@@ -11,10 +11,10 @@ import (
 
 func main() {
 	appConfig := config.LoadConfig()
-	if err := internal.Init(appConfig); err != nil {
+	if err := internal.InitDB(appConfig); err != nil {
 		log.Fatal(err)
 	}
-	defer internal.Close()
+	defer internal.CloseDB()
 
 	fmt.Println("Starting a server on port 8080")
 	http.HandleFunc("/", handlers.RedirectHandler)
