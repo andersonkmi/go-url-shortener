@@ -6,6 +6,10 @@ This is a basic project to start with Go language. It's used to reduce long URLs
 - PostgreSQL
 - Docker (for development purposes)
 
+## Current system architecture
+
+![System architecture](images/url-shortener.jpg)
+
 ## Database set-up
 
 To set up the database, run:
