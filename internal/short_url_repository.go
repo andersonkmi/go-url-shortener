@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -24,15 +26,28 @@ func saveShortUrl(shortUrl ShortUrl) error {
 	return err
 }
 
-func getUrl(url string) (ShortUrl, error) {
+func getShortenedUrlFromOriginal(url string) (ShortUrl, error) {
+	result := db.QueryRow("select url_id, url, short_url from url where url = $1", url)
+	if errors.Is(result.Err(), sql.ErrNoRows) {
+		emptyResult := ShortUrl{0, "", ""}
+		return emptyResult, nil
+	}
+
+	// Returns a valid result
 	var shortUrl ShortUrl
-	err := db.QueryRow("select url_id, url, short_url from url where url = $1", url).Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
+	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
 	return shortUrl, err
 }
 
-func urlAlreadyExists(url string) bool {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM url WHERE url = $1)`
-	db.QueryRow(query, url).Scan(&exists)
-	return exists
+func getShortenedUrlFromShortenedCode(shortenedCode string) (ShortUrl, error) {
+	result := db.QueryRow("select url_id, url, short_url from url where short_url = $1", shortenedCode)
+	if errors.Is(result.Err(), sql.ErrNoRows) {
+		emptyResult := ShortUrl{0, "", ""}
+		return emptyResult, nil
+	}
+
+	// Returns a valid result
+	var shortUrl ShortUrl
+	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
+	return shortUrl, err
 }

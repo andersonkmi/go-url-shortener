@@ -11,3 +11,11 @@ func ShortenUrl(url string) (string, error) {
 	}
 	return shortUrl, nil
 }
+
+func GetOriginalUrl(shortUrl string) (string, error) {
+	originalUrl, err := internal.GetOriginalUrl(shortUrl)
+	if err != nil {
+		return "", err
+	}
+	return originalUrl, nil
+}

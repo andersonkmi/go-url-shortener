@@ -19,17 +19,25 @@ type URLResponse struct {
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
-	// Remove landing slash from path
 	shortCode := strings.TrimPrefix(r.URL.Path, "/")
 
 	if shortCode == "" {
-		// should return something to the API caller
+		http.Error(w, "Invalid short code", http.StatusNotFound)
 		return
 	}
 
-	// Replace with the new function
-	longUrl := ""
-	http.Redirect(w, r, longUrl, http.StatusFound)
+	longUrl, err := shortener.GetOriginalUrl(shortCode)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if longUrl == "" {
+		http.Error(w, "Invalid short code", http.StatusNotFound)
+		return
+	}
+	
+	http.Redirect(w, r, longUrl, http.StatusMovedPermanently)
 }
 
 func shortenHandler(writer http.ResponseWriter, r *http.Request) {
