@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-url-shortener/config"
+	"go-url-shortener/handlers"
 	"go-url-shortener/internal"
 	"log"
 	"net/http"
@@ -16,7 +17,8 @@ func main() {
 	defer internal.Close()
 
 	fmt.Println("Starting a server on port 8080")
-	http.HandleFunc("/", redirectHandler)
-	http.HandleFunc("/shorten", shortenHandler)
+	http.HandleFunc("/", handlers.RedirectHandler)
+	http.HandleFunc("/shorten", handlers.ShortenHandler)
+	http.HandleFunc("/health", handlers.HealthCheckHandler)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", appConfig.ApplicationPort), nil))
 }

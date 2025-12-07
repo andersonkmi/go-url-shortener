@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -18,7 +18,11 @@ type URLResponse struct {
 	ShortUrl string `json:"shortUrl"`
 }
 
-func redirectHandler(w http.ResponseWriter, r *http.Request) {
+type HealthCheckResponse struct {
+	Status string `json:"status"`
+}
+
+func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 	shortCode := strings.TrimPrefix(r.URL.Path, "/")
 
 	if shortCode == "" {
@@ -36,11 +40,11 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid short code", http.StatusNotFound)
 		return
 	}
-	
+
 	http.Redirect(w, r, longUrl, http.StatusMovedPermanently)
 }
 
-func shortenHandler(writer http.ResponseWriter, r *http.Request) {
+func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -70,6 +74,15 @@ func shortenHandler(writer http.ResponseWriter, r *http.Request) {
 	fmt.Sprintln(writer, "Short URL created: %s", shortUrl)
 
 	generateSuccessResponse(writer, http.StatusCreated, createUrlRequest.URL, shortUrl)
+}
+
+func HealthCheckHandler(writer http.ResponseWriter, r *http.Request) {
+	healthCheckResponse := HealthCheckResponse{"OK"}
+	response, _ := json.Marshal(healthCheckResponse)
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(response)
 }
 
 func generateSuccessResponse(writer http.ResponseWriter, code int, originalUrl string, shortenedUrl string) {
