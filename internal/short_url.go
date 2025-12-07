@@ -8,13 +8,10 @@ import (
 
 func GenerateShortUrl(originalUrl string) (string, error) {
 	// Verify if the current URL is already present
-	alreadyShortened := urlAlreadyExists(originalUrl)
-	if alreadyShortened == true {
-		shortenedUrl, _ := getUrl(originalUrl)
-		if shortenedUrl.Url != "" {
-			log.Default().Println(fmt.Sprintf("URL %s is already shortened", originalUrl))
-			return shortenedUrl.ShortUrl, nil
-		}
+	shortenedUrl, _ := getShortenedUrlFromOriginal(originalUrl)
+	if shortenedUrl.Url != "" {
+		log.Default().Println(fmt.Sprintf("URL %s is already shortened", originalUrl))
+		return shortenedUrl.ShortUrl, nil
 	}
 
 	id, err := generateShortUrlId()
@@ -30,4 +27,12 @@ func GenerateShortUrl(originalUrl string) (string, error) {
 	}
 
 	return base62Id, nil
+}
+
+func GetOriginalUrl(shortUrl string) (string, error) {
+	url, err := getShortenedUrlFromShortenedCode(shortUrl)
+	if err != nil {
+		return "", fmt.Errorf("failed to get original url: %v", err)
+	}
+	return url.Url, nil
 }
