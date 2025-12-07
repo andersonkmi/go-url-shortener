@@ -22,8 +22,21 @@ func generateShortUrlId() (int64, error) {
 }
 
 func saveShortUrl(shortUrl ShortUrl) error {
-	_, err := db.Exec("insert into url(url_id, url, short_url) values ($1, $2, $3)", shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl)
-	return err
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec("insert into url(url_id, url, short_url) values ($1, $2, $3)", shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl)
+	if err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func getShortenedUrlFromOriginal(url string) (ShortUrl, error) {
