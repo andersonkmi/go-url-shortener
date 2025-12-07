@@ -11,7 +11,7 @@ import (
 
 var db *sql.DB
 
-func Init(config config.Config) error {
+func InitDB(config config.Config) error {
 	connectionStr := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		config.Host, config.Port, config.User, config.Password, config.DBName, config.SSLMode)
@@ -33,7 +33,7 @@ func Init(config config.Config) error {
 	return nil
 }
 
-func Close() error {
+func CloseDB() error {
 	if db != nil {
 		return db.Close()
 	}
