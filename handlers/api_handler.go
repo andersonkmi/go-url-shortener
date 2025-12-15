@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-url-shortener/shortener"
-	"log"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type CreateURLRequest struct {
@@ -58,14 +59,14 @@ func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
 
 	err := validateUrl(createUrlRequest.URL)
 	if err != nil {
-		log.Println(err)
+		log.WithField("originalURL", createUrlRequest.URL).Warn("Invalid URL provided")
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	shortenedUrl, err := shortener.ShortenUrl(createUrlRequest.URL)
 	if err != nil {
-		log.Println(err)
+		log.WithField("originalURL", createUrlRequest.URL).Warn("Failed to shorten URL")
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -77,6 +78,7 @@ func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
 }
 
 func HealthCheckHandler(writer http.ResponseWriter, r *http.Request) {
+	log.Info("Performing health check")
 	healthCheckResponse := HealthCheckResponse{"OK"}
 	response, _ := json.Marshal(healthCheckResponse)
 
