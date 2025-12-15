@@ -7,6 +7,8 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	_ "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var db *sql.DB
@@ -27,14 +29,17 @@ func InitDB(config config.Config) error {
 	db.SetConnMaxIdleTime(time.Duration(config.ConnectionMaxIdleTime) * time.Minute)
 
 	if err := db.Ping(); err != nil {
+		log.WithError(err).Fatal("Failed to ping database")
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
+	log.Info("Database connection established")
 	return nil
 }
 
 func CloseDB() error {
 	if db != nil {
+		log.Info("Closing database connection")
 		return db.Close()
 	}
 	return nil
