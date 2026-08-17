@@ -72,8 +72,6 @@ func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	shortUrl := fmt.Sprintf("https://%s/%s", r.Host, shortenedUrl)
-	fmt.Sprintln(writer, "Short URL created: %s", shortUrl)
-
 	generateSuccessResponse(writer, http.StatusCreated, createUrlRequest.URL, shortUrl)
 }
 
