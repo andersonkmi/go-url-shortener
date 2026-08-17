@@ -21,46 +21,41 @@ func generateShortUrlId() (int64, error) {
 	return urlId, nil
 }
 
-func saveShortUrl(shortUrl ShortUrl) error {
-	tx, err := db.Begin()
+func saveShortUrl(shortUrl ShortUrl) (string, error) {
+	var storedShortUrl string
+	err := db.QueryRow(
+		"insert into url(url_id, url, short_url) values ($1, $2, $3) ON CONFLICT (url) DO UPDATE SET url = EXCLUDED.url RETURNING short_url",
+		shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl).Scan(&storedShortUrl)
 	if err != nil {
-		return err
+		return "", err
 	}
-	defer tx.Rollback()
-
-	_, err = tx.Exec("insert into url(url_id, url, short_url) values ($1, $2, $3)", shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl)
-	if err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-	return nil
+	return storedShortUrl, nil
 }
 
 func getShortenedUrlFromOriginal(url string) (ShortUrl, error) {
 	result := db.QueryRow("select url_id, url, short_url from url where url = $1", url)
-	if errors.Is(result.Err(), sql.ErrNoRows) {
+
+	var shortUrl ShortUrl
+	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
+	if errors.Is(err, sql.ErrNoRows) {
 		emptyResult := ShortUrl{0, "", ""}
 		return emptyResult, nil
 	}
 
 	// Returns a valid result
-	var shortUrl ShortUrl
-	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
 	return shortUrl, err
 }
 
 func getShortenedUrlFromShortenedCode(shortenedCode string) (ShortUrl, error) {
 	result := db.QueryRow("select url_id, url, short_url from url where short_url = $1", shortenedCode)
-	if errors.Is(result.Err(), sql.ErrNoRows) {
+
+	var shortUrl ShortUrl
+	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
+	if errors.Is(err, sql.ErrNoRows) {
 		emptyResult := ShortUrl{0, "", ""}
 		return emptyResult, nil
 	}
 
 	// Returns a valid result
-	var shortUrl ShortUrl
-	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
 	return shortUrl, err
 }
