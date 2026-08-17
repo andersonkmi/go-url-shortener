@@ -9,28 +9,33 @@ import (
 
 func GenerateShortUrl(originalUrl string) (string, error) {
 	// Verify if the current URL is already present
-	shortenedUrl, _ := getShortenedUrlFromOriginal(originalUrl)
+	shortenedUrl, shortUrlGetErr := getShortenedUrlFromOriginal(originalUrl)
+	if shortUrlGetErr != nil {
+		log.WithError(shortUrlGetErr).Warn("Failed to retrieve short URL")
+		return "", fmt.Errorf("failed to get short url: %v", shortUrlGetErr)
+	}
+
 	if shortenedUrl.Url != "" {
 		log.WithField("originalURL", originalUrl).Info("URL is already shortened")
 		return shortenedUrl.ShortUrl, nil
 	}
 
-	id, err := generateShortUrlId()
-	if err != nil {
-		log.WithError(err).Warn("Failed to generate short url id")
-		return "", fmt.Errorf("failed to generate short url id: %v", err)
+	id, shortUrlGenErr := generateShortUrlId()
+	if shortUrlGenErr != nil {
+		log.WithError(shortUrlGenErr).Warn("Failed to generate short url id")
+		return "", fmt.Errorf("failed to generate short url id: %v", shortUrlGenErr)
 	}
 
 	base62Id := base62.IdToBase62(id)
 	newShortUrl := ShortUrl{id, originalUrl, base62Id}
-	err2 := saveShortUrl(newShortUrl)
-	if err2 != nil {
-		log.WithField("shortURL", newShortUrl).WithError(err).Warn("Failed to save short URL")
-		return "", fmt.Errorf("failed to save short url: %v", err2)
+	storedShortUrl, urlSaveErr := saveShortUrl(newShortUrl)
+	if urlSaveErr != nil {
+		log.WithField("shortURL", newShortUrl).WithError(urlSaveErr).Warn("Failed to save short URL")
+		return "", fmt.Errorf("failed to save short url: %v", urlSaveErr)
 	}
 
 	log.WithField("shortURL", newShortUrl).Info("Short URL created")
-	return base62Id, nil
+	return storedShortUrl, nil
 }
 
 func GetOriginalUrl(shortUrl string) (string, error) {
