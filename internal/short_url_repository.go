@@ -16,7 +16,7 @@ func generateShortUrlId() (int64, error) {
 	var urlId int64
 	err := db.QueryRow("select nextval('url_id_sequence')").Scan(&urlId)
 	if err != nil {
-		return -1, fmt.Errorf("failed to generate short url id: %v", err)
+		return -1, fmt.Errorf("failed to generate short url id: %w", err)
 	}
 	return urlId, nil
 }

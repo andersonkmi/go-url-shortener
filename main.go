@@ -23,10 +23,18 @@ func main() {
 	}
 
 	log.Info("Starting application...")
-	http.HandleFunc("/", handlers.RedirectHandler)
-	http.HandleFunc("/shorten", handlers.ShortenHandler)
-	http.HandleFunc("/health", handlers.HealthCheckHandler)
-	httpServer := &http.Server{Addr: fmt.Sprintf(":%d", appConfig.ApplicationPort)}
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{shortCode}", handlers.RedirectHandler)
+	mux.HandleFunc("POST /shorten", handlers.ShortenHandler)
+	mux.HandleFunc("GET /health", handlers.HealthCheckHandler)
+	httpServer := &http.Server{
+		Addr:              fmt.Sprintf(":%d", appConfig.ApplicationPort),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
