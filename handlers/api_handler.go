@@ -24,7 +24,7 @@ type HealthCheckResponse struct {
 }
 
 func RedirectHandler(w http.ResponseWriter, r *http.Request) {
-	shortCode := strings.TrimPrefix(r.URL.Path, "/")
+	shortCode := r.PathValue("shortCode")
 
 	if shortCode == "" {
 		http.Error(w, "Invalid short code", http.StatusNotFound)
@@ -46,10 +46,7 @@ func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+	r.Body = http.MaxBytesReader(writer, r.Body, 64*1024)
 
 	var createUrlRequest CreateURLRequest
 	if err := json.NewDecoder(r.Body).Decode(&createUrlRequest); err != nil {

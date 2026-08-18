@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"go-url-shortener/config"
@@ -28,7 +29,7 @@ func InitDB(config config.Config) error {
 	db.SetConnMaxLifetime(time.Duration(config.ConnectionMaxLifetime) * time.Minute)
 	db.SetConnMaxIdleTime(time.Duration(config.ConnectionMaxIdleTime) * time.Minute)
 
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		log.WithError(err).Fatal("Failed to ping database")
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
