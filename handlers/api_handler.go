@@ -80,14 +80,16 @@ func (h *ApiHandler) ShortenHandler(writer http.ResponseWriter, r *http.Request)
 	generateSuccessResponse(writer, http.StatusCreated, createUrlRequest.URL, shortUrl)
 }
 
-func HealthCheckHandler(writer http.ResponseWriter, r *http.Request) {
+func HealthCheckHandler(writer http.ResponseWriter, _ *http.Request) {
 	log.Info("Performing health check")
 	healthCheckResponse := HealthCheckResponse{"OK"}
 	response, _ := json.Marshal(healthCheckResponse)
 
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(response)
+	if _, err := writer.Write(response); err != nil {
+		log.WithError(err).Error("Failed to write health check response")
+	}
 }
 
 func generateSuccessResponse(writer http.ResponseWriter, code int, originalUrl string, shortenedUrl string) {
@@ -95,7 +97,9 @@ func generateSuccessResponse(writer http.ResponseWriter, code int, originalUrl s
 	response, _ := json.Marshal(urlResponse)
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(code)
-	writer.Write(response)
+	if _, err := writer.Write(response); err != nil {
+		log.WithError(err).Error("Failed to write response")
+	}
 }
 
 func validateUrl(url string) error {
