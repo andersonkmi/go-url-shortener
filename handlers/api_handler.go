@@ -23,7 +23,15 @@ type HealthCheckResponse struct {
 	Status string `json:"status"`
 }
 
-func RedirectHandler(w http.ResponseWriter, r *http.Request) {
+type ApiHandler struct {
+	urlShortener *shortener.UrlShortener
+}
+
+func NewApiHandler(urlShortener *shortener.UrlShortener) *ApiHandler {
+	return &ApiHandler{urlShortener: urlShortener}
+}
+
+func (h *ApiHandler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
 	shortCode := r.PathValue("shortCode")
 
 	if shortCode == "" {
@@ -31,7 +39,7 @@ func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	longUrl, err := shortener.GetOriginalUrl(shortCode)
+	longUrl, err := h.urlShortener.GetOriginalUrl(shortCode)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -45,7 +53,7 @@ func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, longUrl, http.StatusMovedPermanently)
 }
 
-func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
+func (h *ApiHandler) ShortenHandler(writer http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(writer, r.Body, 64*1024)
 
 	var createUrlRequest CreateURLRequest
@@ -61,7 +69,7 @@ func ShortenHandler(writer http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortenedUrl, err := shortener.ShortenUrl(createUrlRequest.URL)
+	shortenedUrl, err := h.urlShortener.ShortenUrl(createUrlRequest.URL)
 	if err != nil {
 		log.WithField("originalURL", createUrlRequest.URL).Warn("Failed to shorten URL")
 		http.Error(writer, err.Error(), http.StatusInternalServerError)

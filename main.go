@@ -7,6 +7,7 @@ import (
 	"go-url-shortener/config"
 	"go-url-shortener/handlers"
 	"go-url-shortener/internal"
+	"go-url-shortener/shortener"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,14 +19,19 @@ import (
 
 func main() {
 	appConfig := config.LoadConfig()
-	if err := internal.InitDB(appConfig); err != nil {
+	db, err := internal.InitDB(appConfig)
+	if err != nil {
 		log.Fatal(err)
 	}
 
+	repo := internal.NewShortUrlRepository(db)
+	urlShortener := shortener.New(repo)
+	apiHandler := handlers.NewApiHandler(urlShortener)
+
 	log.Info("Starting application...")
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{shortCode}", handlers.RedirectHandler)
-	mux.HandleFunc("POST /shorten", handlers.ShortenHandler)
+	mux.HandleFunc("GET /{shortCode}", apiHandler.RedirectHandler)
+	mux.HandleFunc("POST /shorten", apiHandler.ShortenHandler)
 	mux.HandleFunc("GET /health", handlers.HealthCheckHandler)
 	httpServer := &http.Server{
 		Addr:              fmt.Sprintf(":%d", appConfig.ApplicationPort),
@@ -61,7 +67,7 @@ func main() {
 	}
 
 	// Close database connection
-	if err := internal.CloseDB(); err != nil {
+	if err := db.Close(); err != nil {
 		log.WithError(err).Warn("Database close error")
 	}
 }
