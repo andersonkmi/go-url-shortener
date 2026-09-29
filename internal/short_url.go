@@ -7,6 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// GenerateShortUrl returns the short code for originalUrl. If the URL was
+// shortened before, the existing code is returned; otherwise a new ID is
+// drawn from the database sequence, encoded to base62, and persisted.
 func (r *ShortUrlRepository) GenerateShortUrl(originalUrl string) (string, error) {
 	// Verify if the current URL is already present
 	shortenedUrl, shortUrlGetErr := r.getShortenedUrlFromOriginal(originalUrl)
@@ -38,6 +41,8 @@ func (r *ShortUrlRepository) GenerateShortUrl(originalUrl string) (string, error
 	return storedShortUrl, nil
 }
 
+// GetOriginalUrl looks up the original URL for the given short code. It
+// returns an empty string with a nil error when the code is unknown.
 func (r *ShortUrlRepository) GetOriginalUrl(shortUrl string) (string, error) {
 	url, err := r.getShortenedUrlFromShortenedCode(shortUrl)
 	if err != nil {

@@ -10,27 +10,37 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// CreateURLRequest is the JSON payload accepted by the Shorten endpoint.
 type CreateURLRequest struct {
 	URL string `json:"url"`
 }
 
+// URLResponse is the JSON body returned after a URL is successfully
+// shortened, containing the original URL and its shortened counterpart.
 type URLResponse struct {
 	URL      string `json:"url"`
 	ShortUrl string `json:"shortUrl"`
 }
 
+// HealthCheckResponse is the JSON body returned by the health check endpoint.
 type HealthCheckResponse struct {
 	Status string `json:"status"`
 }
 
+// ApiHandler exposes the HTTP handlers for the URL shortener API.
 type ApiHandler struct {
 	urlShortener *shortener.UrlShortener
 }
 
+// NewApiHandler returns an ApiHandler backed by the given UrlShortener.
 func NewApiHandler(urlShortener *shortener.UrlShortener) *ApiHandler {
 	return &ApiHandler{urlShortener: urlShortener}
 }
 
+// Redirect resolves the "shortCode" path value to its original URL and
+// replies with a 301 Moved Permanently redirect. It responds with 404 Not
+// Found when the short code is missing or unknown, and 500 Internal Server
+// Error when the lookup fails.
 func (h *ApiHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 	shortCode := r.PathValue("shortCode")
 
@@ -53,6 +63,11 @@ func (h *ApiHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, longUrl, http.StatusMovedPermanently)
 }
 
+// Shorten reads a CreateURLRequest from the request body (limited to 64 KiB),
+// validates the URL, and creates a shortened version of it. On success it
+// replies with 201 Created and a URLResponse. It responds with 400 Bad Request
+// for a malformed body or invalid URL, and 500 Internal Server Error when
+// shortening fails.
 func (h *ApiHandler) Shorten(writer http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(writer, r.Body, 64*1024)
 
@@ -80,6 +95,8 @@ func (h *ApiHandler) Shorten(writer http.ResponseWriter, r *http.Request) {
 	generateSuccessResponse(writer, http.StatusCreated, createUrlRequest.URL, shortUrl)
 }
 
+// PerformHealthCheck replies with 200 OK and a HealthCheckResponse indicating
+// the service is up.
 func (h *ApiHandler) PerformHealthCheck(writer http.ResponseWriter, _ *http.Request) {
 	log.Info("Performing health check")
 	healthCheckResponse := HealthCheckResponse{"OK"}
@@ -92,6 +109,8 @@ func (h *ApiHandler) PerformHealthCheck(writer http.ResponseWriter, _ *http.Requ
 	}
 }
 
+// generateSuccessResponse writes a URLResponse as JSON with the given status
+// code.
 func generateSuccessResponse(writer http.ResponseWriter, code int, originalUrl string, shortenedUrl string) {
 	var urlResponse = URLResponse{originalUrl, shortenedUrl}
 	response, _ := json.Marshal(urlResponse)
@@ -102,6 +121,8 @@ func generateSuccessResponse(writer http.ResponseWriter, code int, originalUrl s
 	}
 }
 
+// validateUrl checks that url is non-empty and starts with http:// or
+// https://, returning an error describing the first violation found.
 func validateUrl(url string) error {
 	if url == "" {
 		return fmt.Errorf("URL is empty")

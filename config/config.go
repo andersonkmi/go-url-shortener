@@ -1,3 +1,5 @@
+// Package config loads application settings from environment variables,
+// optionally sourced from a .env file, with sensible defaults.
 package config
 
 import (
@@ -8,6 +10,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config holds the database connection settings, connection pool tuning
+// parameters, and the HTTP port the application listens on.
 type Config struct {
 	Host                  string
 	Port                  int
@@ -36,6 +40,9 @@ const (
 	applicationPortEnvKey       = "PORT"
 )
 
+// LoadConfig builds a Config from environment variables, falling back to
+// defaults for any that are unset. If a .env file is present in the working
+// directory it is loaded first; otherwise the system environment is used.
 func LoadConfig() Config {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
@@ -67,6 +74,8 @@ func LoadConfig() Config {
 	}
 }
 
+// getEnvironment returns the value of the environment variable key, or
+// defaultValue if it is unset or empty.
 func getEnvironment(key, defaultValue string) string {
 	if envValue := os.Getenv(key); envValue != "" {
 		return envValue
@@ -74,6 +83,9 @@ func getEnvironment(key, defaultValue string) string {
 	return defaultValue
 }
 
+// getEnvironmentAsInt returns the value of the environment variable key
+// parsed as an int, or defaultValue if it is unset, empty, or not a valid
+// integer.
 func getEnvironmentAsInt(key string, defaultValue int) int {
 	if envValue := os.Getenv(key); envValue != "" {
 		if intValue, err := strconv.Atoi(envValue); err == nil {

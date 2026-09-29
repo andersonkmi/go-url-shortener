@@ -1,3 +1,5 @@
+// The go-url-shortener command runs an HTTP URL shortening service backed by
+// PostgreSQL.
 package main
 
 import (
@@ -17,6 +19,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// main wires the application together (config -> database -> repository ->
+// shortener -> handlers), registers the HTTP routes, and starts the server.
+// It then blocks until SIGINT or SIGTERM is received, shuts the server down
+// gracefully with a 10s timeout, and closes the database pool.
 func main() {
 	appConfig := config.LoadConfig()
 	db, err := internal.InitDB(appConfig)
@@ -72,6 +78,8 @@ func main() {
 	}
 }
 
+// init configures logrus with Info level and a JSON formatter using a
+// millisecond-precision timestamp format.
 func init() {
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&log.JSONFormatter{
