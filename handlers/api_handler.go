@@ -31,7 +31,7 @@ func NewApiHandler(urlShortener *shortener.UrlShortener) *ApiHandler {
 	return &ApiHandler{urlShortener: urlShortener}
 }
 
-func (h *ApiHandler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApiHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 	shortCode := r.PathValue("shortCode")
 
 	if shortCode == "" {
@@ -53,7 +53,7 @@ func (h *ApiHandler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, longUrl, http.StatusMovedPermanently)
 }
 
-func (h *ApiHandler) ShortenHandler(writer http.ResponseWriter, r *http.Request) {
+func (h *ApiHandler) Shorten(writer http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(writer, r.Body, 64*1024)
 
 	var createUrlRequest CreateURLRequest
@@ -80,7 +80,7 @@ func (h *ApiHandler) ShortenHandler(writer http.ResponseWriter, r *http.Request)
 	generateSuccessResponse(writer, http.StatusCreated, createUrlRequest.URL, shortUrl)
 }
 
-func HealthCheckHandler(writer http.ResponseWriter, _ *http.Request) {
+func (h *ApiHandler) PerformHealthCheck(writer http.ResponseWriter, _ *http.Request) {
 	log.Info("Performing health check")
 	healthCheckResponse := HealthCheckResponse{"OK"}
 	response, _ := json.Marshal(healthCheckResponse)
