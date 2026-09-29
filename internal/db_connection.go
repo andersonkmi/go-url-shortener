@@ -1,3 +1,5 @@
+// Package internal contains the persistence layer of the URL shortener:
+// database initialization and the repository for short URL records.
 package internal
 
 import (
@@ -11,6 +13,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// InitDB opens a PostgreSQL connection pool using the given configuration,
+// applies the pool limits and connection lifetimes from config, and verifies
+// connectivity with a ping. The caller is responsible for closing the
+// returned handle.
 func InitDB(config config.Config) (*sql.DB, error) {
 	connectionStr := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",

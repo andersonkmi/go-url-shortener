@@ -27,7 +27,7 @@ docker/        Dockerfile and init.sql for the development PostgreSQL instance
 ## Design notes
 
 - **Dependency injection**: there are no package-level globals. `internal.InitDB` returns a `*sql.DB` handle, and `main` wires the chain explicitly: `*sql.DB` → `internal.NewShortUrlRepository` → `shortener.New` → `handlers.NewApiHandler`. This makes initialization order explicit and each layer testable in isolation.
-- **Shortening algorithm**: IDs come from the PostgreSQL sequence `url_id_sequence` and are encoded to base62 (`[0-9A-Za-z]`), producing compact collision-free codes. Shortening is idempotent: submitting an already-known URL returns the existing short code (via `ON CONFLICT` upsert).
+- **Shortening algorithm**: IDs come from the PostgreSQL sequence `url_id_sequence` and are encoded to base62 (`[0-9A-Za-z]`), producing compact collision-free codes. Shortening is idempotent: submitting an already-known URL returns the existing short code by retrieving it from the database.
 - **Connection pooling**: pool limits and connection lifetimes are tunable via environment variables (see below).
 - **Graceful shutdown**: the server listens for `SIGINT`/`SIGTERM`, shuts down the HTTP server with a 10s timeout, then closes the DB pool. HTTP timeouts (read/write/idle/read-header) are set on the server.
 
