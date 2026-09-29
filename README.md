@@ -27,7 +27,7 @@ docker/        Dockerfile and init.sql for the development PostgreSQL instance
 ## Design notes
 
 - **Dependency injection**: there are no package-level globals. `internal.InitDB` returns a `*sql.DB` handle, and `main` wires the chain explicitly: `*sql.DB` → `internal.NewShortUrlRepository` → `shortener.New` → `handlers.NewApiHandler`. This makes initialization order explicit and each layer testable in isolation.
-- **Shortening algorithm**: IDs come from the PostgreSQL sequence `url_id_sequence` and are encoded to base62 (`[0-9A-Za-z]`), producing compact collision-free codes. Shortening is idempotent: submitting an already-known URL returns the existing short code by retrieving it from the database.
+- **Shortening algorithm**: IDs come from the PostgreSQL sequence `url_id` and are encoded to base62 (`[0-9A-Za-z]`), producing compact collision-free codes. Shortening is idempotent: submitting an already-known URL returns the existing short code by retrieving it from the database.
 - **Connection pooling**: pool limits and connection lifetimes are tunable via environment variables (see below).
 - **Graceful shutdown**: the server listens for `SIGINT`/`SIGTERM`, shuts down the HTTP server with a 10s timeout, then closes the DB pool. HTTP timeouts (read/write/idle/read-header) are set on the server.
 
@@ -66,7 +66,7 @@ Configuration is read from a `.env` file if present, falling back to system envi
 | `DB_PORT` | `5432` | PostgreSQL port |
 | `DB_USER` | `pguser` | Database user |
 | `DB_PASSWORD` | `pgpwd` | Database password |
-| `DB_NAME` | `urlshortner` | Database name |
+| `DB_NAME` | `urlshortener` | Database name |
 | `DB_SSL_MODE` | `disable` | `sslmode` for the connection |
 | `DB_MAX_OPEN_CONNECTIONS` | `25` | Max open connections in the pool |
 | `DB_MAX_IDLE_CONNECTIONS` | `10` | Max idle connections in the pool |
@@ -75,13 +75,20 @@ Configuration is read from a `.env` file if present, falling back to system envi
 
 ## Database set-up
 
-The schema consists of a single `url` table (`url_id`, `url`, `short_url`) plus the `url_id_sequence` sequence (see `docker/postgres/init.sql`).
+The schema consists of a single `shortened_url` table plus the `url_id` sequence (see `docker/postgres/init.sql`):
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `bigint` | Primary key, taken from the `url_id` sequence |
+| `url` | `varchar` | Original URL, unique |
+| `short_url` | `varchar` | Base62 short code |
+| `creation_date` | `timestamp with time zone` | When the record was created; defaults to `now()`, so the application does not set it explicitly |
 
 To set up the database, run:
 
 ```
-$ docker image build -t codecraftlabs/url-shortner-db:1.0.0 ./docker/postgres
-$ docker container run --detach --name url-shortner-db --publish 5432:5432 codecraftlabs/url-shortner-db:1.0.0
+$ docker image build -t codecraftlabs/url-shortener-db:1.0.0 ./docker/postgres
+$ docker container run --detach --name url-shortener-db --publish 5432:5432 codecraftlabs/url-shortener-db:1.0.0
 ```
 
 ## Build and run

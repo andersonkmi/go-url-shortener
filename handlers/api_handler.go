@@ -91,7 +91,7 @@ func (h *ApiHandler) Shorten(writer http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortUrl := fmt.Sprintf("https://%s/%s", r.Host, shortenedUrl)
+	shortUrl := fmt.Sprintf("%s://%s/%s", requestScheme(r), r.Host, shortenedUrl)
 	generateSuccessResponse(writer, http.StatusCreated, createUrlRequest.URL, shortUrl)
 }
 
@@ -119,6 +119,22 @@ func generateSuccessResponse(writer http.ResponseWriter, code int, originalUrl s
 	if _, err := writer.Write(response); err != nil {
 		log.WithError(err).Error("Failed to write response")
 	}
+}
+
+// requestScheme returns the scheme used to reach the service. It honours the
+// X-Forwarded-Proto header set by reverse proxies and load balancers, then
+// falls back to inspecting whether the request itself was served over TLS.
+func requestScheme(r *http.Request) string {
+	if forwarded := r.Header.Get("X-Forwarded-Proto"); forwarded != "" {
+		if scheme, _, found := strings.Cut(forwarded, ","); found {
+			return strings.ToLower(strings.TrimSpace(scheme))
+		}
+		return strings.ToLower(strings.TrimSpace(forwarded))
+	}
+	if r.TLS != nil {
+		return "https"
+	}
+	return "http"
 }
 
 // validateUrl checks that url is non-empty and starts with http:// or

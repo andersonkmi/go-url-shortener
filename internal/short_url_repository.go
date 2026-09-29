@@ -30,7 +30,7 @@ func NewShortUrlRepository(db *sql.DB) *ShortUrlRepository {
 // sequence.
 func (r *ShortUrlRepository) generateShortUrlId() (int64, error) {
 	var urlId int64
-	err := r.db.QueryRow("select nextval('url_id_sequence')").Scan(&urlId)
+	err := r.db.QueryRow("select nextval('url_id')").Scan(&urlId)
 	if err != nil {
 		return -1, fmt.Errorf("failed to generate short url id: %w", err)
 	}
@@ -43,7 +43,7 @@ func (r *ShortUrlRepository) generateShortUrlId() (int64, error) {
 func (r *ShortUrlRepository) saveShortUrl(shortUrl ShortUrl) (string, error) {
 	var storedShortUrl string
 	err := r.db.QueryRow(
-		"insert into url(url_id, url, short_url) values ($1, $2, $3) ON CONFLICT (url) DO UPDATE SET url = EXCLUDED.url RETURNING short_url",
+		"insert into shortened_url(id, url, short_url) values ($1, $2, $3) ON CONFLICT (url) DO UPDATE SET url = EXCLUDED.url RETURNING short_url",
 		shortUrl.UrlId, shortUrl.Url, shortUrl.ShortUrl).Scan(&storedShortUrl)
 	if err != nil {
 		return "", err
@@ -55,7 +55,7 @@ func (r *ShortUrlRepository) saveShortUrl(shortUrl ShortUrl) (string, error) {
 // matches url. It returns a zero-value ShortUrl with a nil error when no row
 // exists.
 func (r *ShortUrlRepository) getShortenedUrlFromOriginal(url string) (ShortUrl, error) {
-	result := r.db.QueryRow("select url_id, url, short_url from url where url = $1", url)
+	result := r.db.QueryRow("select id, url, short_url from shortened_url where url = $1", url)
 
 	var shortUrl ShortUrl
 	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)
@@ -72,7 +72,7 @@ func (r *ShortUrlRepository) getShortenedUrlFromOriginal(url string) (ShortUrl, 
 // code matches shortenedCode. It returns a zero-value ShortUrl with a nil
 // error when no row exists.
 func (r *ShortUrlRepository) getShortenedUrlFromShortenedCode(shortenedCode string) (ShortUrl, error) {
-	result := r.db.QueryRow("select url_id, url, short_url from url where short_url = $1", shortenedCode)
+	result := r.db.QueryRow("select id, url, short_url from shortened_url where short_url = $1", shortenedCode)
 
 	var shortUrl ShortUrl
 	err := result.Scan(&shortUrl.UrlId, &shortUrl.Url, &shortUrl.ShortUrl)

@@ -51,7 +51,7 @@ func LoadConfig() Config {
 	dbPort := getEnvironmentAsInt(dbPortEnvKey, 5432)
 	dbUser := getEnvironment(dbUserEnvKey, "pguser")
 	dbPassword := getEnvironment(dbPasswordEnvKey, "pgpwd")
-	dbName := getEnvironment(dbNameEnvKey, "urlshortner")
+	dbName := getEnvironment(dbNameEnvKey, "urlshortener")
 	dbSSLMode := getEnvironment(dbSSLModeEnvKey, "disable")
 	maxOpenConnections := getEnvironmentAsInt(maxOpenConnectionsEnvKey, 25)
 	maxIdleConnections := getEnvironmentAsInt(maxIdleConnectionsEnvKey, 10)
