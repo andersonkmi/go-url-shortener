@@ -30,9 +30,9 @@ func main() {
 
 	log.Info("Starting application...")
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{shortCode}", apiHandler.RedirectHandler)
-	mux.HandleFunc("POST /shorten", apiHandler.ShortenHandler)
-	mux.HandleFunc("GET /health", handlers.HealthCheckHandler)
+	mux.HandleFunc("GET /{shortCode}", apiHandler.Redirect)
+	mux.HandleFunc("POST /shorten", apiHandler.Shorten)
+	mux.HandleFunc("GET /health", apiHandler.PerformHealthCheck)
 	httpServer := &http.Server{
 		Addr:              fmt.Sprintf(":%d", appConfig.ApplicationPort),
 		Handler:           mux,
