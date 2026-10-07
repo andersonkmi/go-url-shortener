@@ -12,6 +12,8 @@ This is a basic project to start with Go language. It's used to reduce long URLs
 
 ![System architecture](images/url-shortener.jpg)
 
+Class and sequence diagrams (Mermaid) are available in [`docs/diagrams.md`](docs/diagrams.md).
+
 ## Project layout
 
 ```
